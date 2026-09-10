@@ -1,0 +1,1387 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Yucatán & CDMX — Travel Dashboard</title>
+<style>
+  :root{
+    --sand:#F4EEE0;
+    --sand-deep:#E9DFC7;
+    --ink:#20303A;
+    --teal:#0E6E6A;
+    --teal-deep:#0A4F4C;
+    --clay:#B5502D;
+    --clay-deep:#8F3D22;
+    --gold:#D9A441;
+    --card:#FFFFFF;
+    --line:#DED2B4;
+    --radius-s:6px;
+    --radius-m:12px;
+    --shadow:0 2px 10px rgba(32,48,58,.08);
+    --maxw:520px;
+    font-size:16px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--sand);
+    color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.45;
+    -webkit-text-size-adjust:100%;
+  }
+  h1,h2,h3,h4{
+    font-family:Georgia,"Iowan Old Style","Palatino Linotype",serif;
+    margin:0 0 6px;
+    color:var(--teal-deep);
+    font-weight:700;
+  }
+  a{color:var(--clay-deep);}
+  button{font-family:inherit;}
+
+  /* ---------- LAYOUT SHELL ---------- */
+  .app-frame{display:flex;max-width:calc(var(--maxw) + 68px);margin:0 auto;min-height:100vh;background:var(--sand);}
+  .shell{flex:1 1 auto;min-width:0;background:var(--sand);position:relative;}
+
+  header.topbar{
+    position:sticky;top:0;z-index:50;
+    background:linear-gradient(180deg,var(--teal-deep),var(--teal));
+    color:#fff;
+    padding:14px 16px 12px;
+    box-shadow:0 2px 8px rgba(0,0,0,.15);
+  }
+  .topbar-row{display:flex;align-items:center;justify-content:space-between;gap:10px;}
+  .brand{display:flex;flex-direction:column;}
+  .brand small{
+    letter-spacing:.02em;color:#CFEAE6;font-size:.72rem;
+  }
+  .brand strong{font-family:Georgia,serif;font-size:1.15rem;line-height:1.1;}
+  .icon-btn{
+
+    background:rgba(255,255,255,.14);border:none;color:#fff;
+    width:38px;height:38px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    flex-shrink:0;
+  }
+  .icon-btn:active{background:rgba(255,255,255,.28);}
+  .icon-btn svg{width:18px;height:18px;stroke:#fff;fill:none;stroke-width:2;}
+
+  .searchwrap{
+    max-height:0;overflow:hidden;transition:max-height .22s ease;
+  }
+  .searchwrap.open{max-height:60px;margin-top:10px;}
+  .searchwrap input{
+    width:100%;padding:10px 14px;border-radius:20px;border:none;
+    font-size:.95rem;background:#fff;color:var(--ink);
+  }
+
+  /* ---------- PAGES ---------- */
+  main{padding:14px 16px 24px;}
+  .page{display:none;}
+  .page.active{display:block;}
+
+  .day-pill{
+    display:inline-block;background:var(--gold);color:var(--ink);
+    font-weight:700;padding:4px 12px;border-radius:20px;font-size:.82rem;
+    margin-bottom:10px;
+  }
+
+  .card{
+    background:var(--card);border:1px solid var(--line);
+    border-radius:var(--radius-m);padding:14px 16px;margin-bottom:12px;
+    box-shadow:var(--shadow);
+  }
+  .card h3{font-size:1.02rem;margin-bottom:4px;}
+  .card p{margin:4px 0;font-size:.92rem;}
+  .muted{color:#5D6E76;font-size:.85rem;}
+
+  .quick-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0;}
+  .quick-grid button{
+    background:var(--card);border:1px solid var(--line);border-radius:var(--radius-m);
+    padding:12px 10px;text-align:left;font-size:.85rem;color:var(--ink);
+    box-shadow:var(--shadow);
+  }
+  .quick-grid button strong{display:block;font-size:.9rem;color:var(--teal-deep);margin-bottom:2px;}
+
+  .mini-strip{display:flex;gap:6px;overflow-x:auto;padding:4px 0 10px;margin:0 -2px;}
+  .mini-strip .stop{
+    flex:0 0 auto;min-width:64px;text-align:center;padding:8px 6px;border-radius:var(--radius-s);
+    background:var(--sand-deep);font-size:.72rem;color:var(--ink);border:1px solid var(--line);
+  }
+  .mini-strip .stop.here{background:var(--clay);color:#fff;border-color:var(--clay-deep);font-weight:700;}
+
+  /* Accordion */
+  details.acc{
+    background:var(--card);border:1px solid var(--line);border-radius:var(--radius-m);
+    margin-bottom:10px;overflow:hidden;box-shadow:var(--shadow);
+  }
+  details.acc[open]{border-color:var(--teal);}
+  details.acc summary{
+    list-style:none;cursor:pointer;padding:14px 16px;display:flex;
+    align-items:center;justify-content:space-between;gap:10px;
+  }
+  details.acc summary::-webkit-details-marker{display:none;}
+  .acc-title{display:flex;flex-direction:column;}
+  .acc-title strong{font-size:.98rem;color:var(--teal-deep);}
+  .acc-title span{font-size:.78rem;color:#5D6E76;}
+  .chev{width:16px;height:16px;flex-shrink:0;transition:transform .2s ease;stroke:var(--teal-deep);fill:none;stroke-width:2;}
+  details.acc[open] .chev{transform:rotate(180deg);}
+  .acc-body{padding:0 16px 16px;}
+  .acc-body h4{font-size:.85rem;color:var(--clay-deep);margin:10px 0 4px;}
+  .acc-body ul{margin:4px 0 8px;padding-left:18px;font-size:.9rem;}
+  .acc-body li{margin-bottom:3px;}
+
+  /* chip sub-tabs inside a city */
+  .chiptabs{display:flex;gap:6px;overflow-x:auto;margin:4px 0 10px;}
+  .chiptabs button{
+    flex:0 0 auto;border:1px solid var(--line);background:var(--sand-deep);
+    padding:6px 12px;border-radius:16px;font-size:.78rem;color:var(--ink);
+  }
+  .chiptabs button.active{background:var(--teal);border-color:var(--teal-deep);color:#fff;}
+  .citypane{display:none;font-size:.9rem;}
+  .citypane.active{display:block;}
+
+  .field{margin-bottom:10px;font-size:.9rem;}
+  .field label{display:block;font-size:.75rem;color:#5D6E76;margin-bottom:2px;}
+  .field .val{
+    background:var(--sand-deep);border:1px dashed var(--line);border-radius:var(--radius-s);
+    padding:8px 10px;color:var(--ink);
+  }
+
+  .checklist label{
+    display:flex;align-items:flex-start;gap:10px;padding:8px 0;
+    border-bottom:1px solid var(--sand-deep);font-size:.92rem;
+  }
+  .checklist label:last-child{border-bottom:none;}
+  .checklist input[type=checkbox]{
+    width:19px;height:19px;flex-shrink:0;margin-top:1px;accent-color:var(--teal);
+  }
+  .checklist input:checked + span{text-decoration:line-through;color:#8B978F;}
+
+  /* Food cards */
+  .foodgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .foodcard{
+    background:var(--card);border:1px solid var(--line);border-radius:var(--radius-m);
+    overflow:hidden;box-shadow:var(--shadow);position:relative;
+  }
+  .foodphoto{
+    height:88px;display:flex;align-items:center;justify-content:center;
+    font-size:2.1rem;background:linear-gradient(135deg,var(--gold),var(--clay));color:#fff;
+  }
+  .foodphoto img{width:100%;height:100%;object-fit:cover;}
+  .foodbody{padding:10px;}
+  .foodbody strong{display:block;font-size:.88rem;color:var(--teal-deep);}
+  .foodbody p{font-size:.76rem;margin:3px 0 6px;color:#5D6E76;}
+  .foodmeta{display:flex;align-items:center;justify-content:space-between;font-size:.72rem;}
+  .tag{background:var(--sand-deep);border-radius:10px;padding:2px 7px;color:var(--ink);}
+  .foodbody label{display:flex;align-items:center;gap:5px;font-size:.72rem;}
+  .foodbody input[type=checkbox]{accent-color:var(--clay);}
+
+  .filterbar{display:flex;gap:6px;overflow-x:auto;margin-bottom:10px;}
+  .filterbar button{
+    flex:0 0 auto;border:1px solid var(--line);background:#fff;padding:6px 12px;
+    border-radius:16px;font-size:.78rem;
+  }
+  .filterbar button.active{background:var(--clay);color:#fff;border-color:var(--clay-deep);}
+  .filterbar.stars-filter button.active{background:var(--gold);color:var(--ink);border-color:var(--gold);}
+  .foodcard.tried{border-color:var(--gold);background:#FBF3E1;}
+
+  /* Consigli Utili (Soldi e Pagamenti) */
+  .tips-card{
+    background:var(--sand-deep);border:1px solid var(--line);border-radius:var(--radius-m);
+    padding:14px 16px;margin-top:16px;
+  }
+  .tips-title{margin:0 0 8px;font-size:.92rem;color:var(--clay-deep);}
+  .tips-list{margin:0;padding-left:18px;font-size:.84rem;color:var(--ink);}
+  .tips-list li{margin-bottom:8px;}
+  .tips-list li:last-child{margin-bottom:0;}
+  .tips-list strong{color:var(--teal-deep);}
+  .tips-list ul{margin:4px 0 0;padding-left:16px;}
+  .tips-list ul li{margin-bottom:3px;}
+
+  .next-stop{
+    margin-top:16px;padding:12px 14px;border-radius:var(--radius-m);
+    background:linear-gradient(135deg, rgba(14,110,106,.10), rgba(217,164,65,.12));
+    border:1px solid var(--line);
+  }
+  .next-stop .ns-label{font-size:.68rem;font-weight:700;color:var(--teal-deep);text-transform:uppercase;letter-spacing:.03em;margin-bottom:4px;}
+  .next-stop .ns-route{font-size:.92rem;font-weight:700;color:var(--ink);}
+  .next-stop .ns-mode{font-size:.82rem;color:#5D6E76;margin-top:2px;}
+
+  .lodging-card{
+    background:var(--sand-deep);border:1px solid var(--line);border-radius:var(--radius-m);
+    padding:12px 14px;
+  }
+  .lodging-name{font-size:.98rem;font-weight:700;color:var(--teal-deep);margin-bottom:6px;}
+  .lodging-line{font-size:.88rem;color:var(--ink);margin-bottom:4px;}
+  .lodging-line strong{color:var(--teal-deep);}
+
+  .day-plan{margin-bottom:18px;}
+  .day-plan:last-child{margin-bottom:0;}
+  .day-plan-header{
+    display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;
+    font-weight:700;color:var(--teal-deep);font-size:.92rem;
+    padding-bottom:6px;margin-bottom:8px;border-bottom:2px solid var(--gold);
+  }
+  .day-plan-header .dp-sub{font-size:.72rem;font-weight:600;color:var(--clay-deep);}
+  .block-label{
+    font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.03em;
+    color:var(--clay-deep);margin:10px 0 4px;
+  }
+  .day-plan .block-label:first-of-type{margin-top:0;}
+
+  .flight-card{
+    background:var(--sand-deep);border:1px solid var(--line);border-radius:var(--radius-m);
+    padding:12px 14px;margin-bottom:12px;
+  }
+  .flight-card:last-child{margin-bottom:0;}
+  .flight-card-title{
+    font-size:.88rem;font-weight:700;color:var(--teal-deep);
+    padding-bottom:8px;margin-bottom:10px;border-bottom:2px solid var(--gold);
+  }
+  .flight-leg{margin-bottom:10px;}
+  .flight-leg:last-child{margin-bottom:0;}
+  .flight-route{font-size:.9rem;font-weight:600;color:var(--ink);margin-bottom:2px;}
+  .flight-airline{font-size:.82rem;color:#5D6E76;}
+  .flight-airline strong{color:var(--clay-deep);}
+  .flight-times{font-size:.9rem;color:var(--ink);margin-top:2px;}
+  .flight-times strong{color:var(--teal-deep);}
+  .flight-note{font-size:.78rem;color:#5D6E76;margin-top:2px;font-style:italic;}
+
+  .subtabbar{display:flex;background:var(--card);border:1px solid var(--line);border-radius:20px;padding:3px;margin-bottom:14px;}
+  .subtabbar button{flex:1;border:none;background:none;padding:8px 4px;border-radius:16px;font-size:.82rem;color:var(--ink);}
+  .subtabbar button.active{background:var(--teal);color:#fff;}
+  .subpage{display:none;}
+  .subpage.active{display:block;}
+
+  /* Side rail navigation */
+  nav.rail{
+    flex:0 0 68px;width:68px;
+    background:linear-gradient(180deg,var(--teal-deep),var(--teal));
+    display:flex;flex-direction:column;align-items:stretch;
+    position:sticky;top:0;align-self:flex-start;height:100vh;
+    padding:14px 0;
+    box-shadow:2px 0 10px rgba(0,0,0,.12);
+    z-index:70;
+  }
+  nav.rail button{
+    background:none;border:none;display:flex;flex-direction:column;align-items:center;gap:4px;
+    color:#BFE2DE;font-size:.62rem;padding:11px 2px;line-height:1.1;
+  }
+  nav.rail button svg{width:21px;height:21px;stroke:#BFE2DE;fill:none;stroke-width:2;}
+  nav.rail button.active{color:#fff;background:rgba(255,255,255,.12);border-radius:10px;margin:0 6px;}
+  nav.rail button.active svg{stroke:#fff;}
+
+  /* Map button */
+  .mapbtn{
+    display:inline-flex;align-items:center;justify-content:center;
+    width:26px;height:26px;border-radius:50%;flex-shrink:0;
+    background:var(--sand-deep);border:1px solid var(--line);font-size:.85rem;
+    padding:0;
+  }
+  .mapbtn:active{background:var(--gold);}
+  .place-row{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;}
+  .place-row .place-text{flex:1;min-width:0;}
+  .field .place-row .val{flex:1;}
+
+  /* Cenote cards */
+  .cenote-card{
+    background:var(--card);border:1px solid var(--line);border-radius:var(--radius-m);
+    padding:14px 16px;margin-bottom:12px;box-shadow:var(--shadow);
+  }
+  .cenote-head{display:flex;align-items:center;justify-content:space-between;gap:8px;}
+  .cenote-head h3{margin-bottom:2px;}
+  .stars{white-space:nowrap;font-size:.95rem;letter-spacing:1px;}
+  .stars .on{color:var(--gold);}
+  .stars .off{color:var(--line);}
+  .name-row{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;}
+  .name-row h3{margin-bottom:0;}
+
+  /* Route map (Home) */
+  .baggage-wrap{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0 10px;}
+  .baggage-card{
+    background:var(--sand-deep);border:1px solid var(--line);border-radius:var(--radius-m);
+    padding:12px;text-align:left;
+  }
+  .baggage-card .bicon{font-size:1.5rem;display:block;margin-bottom:4px;}
+  .baggage-card strong{display:block;font-size:.86rem;color:var(--teal-deep);margin-bottom:4px;}
+  .baggage-card .bspec{font-size:.8rem;font-weight:600;color:var(--ink);margin:2px 0;}
+  .baggage-card .bnote{font-size:.74rem;color:#5D6E76;margin-top:4px;}
+
+  .routestep{position:relative;display:flex;gap:12px;padding-bottom:18px;}
+  .routestep:last-child{padding-bottom:0;}
+  .routestep .rail-col{display:flex;flex-direction:column;align-items:center;width:22px;flex-shrink:0;}
+  .routestep .dot{
+    width:16px;height:16px;border-radius:50%;background:var(--sand-deep);
+    border:2px solid var(--teal);flex-shrink:0;z-index:1;
+  }
+  .routestep .connector{flex:1;width:2px;background:var(--line);margin-top:2px;min-height:22px;}
+  .routestep.flight .connector{background:none;border-left:2px dashed var(--clay);}
+  .routestep .rbody{flex:1;padding-top:0px;}
+  .routestep .rbody strong{display:block;font-size:.92rem;color:var(--teal-deep);}
+  .routestep .rbody span.rdate{display:block;font-size:.75rem;color:#5D6E76;margin-top:1px;}
+  .routestep .flight-tag{
+    display:inline-flex;align-items:center;gap:4px;font-size:.7rem;color:var(--clay-deep);
+    font-weight:700;margin:4px 0 0;
+  }
+  .routestep.here .dot{background:var(--clay);border-color:var(--clay-deep);box-shadow:0 0 0 4px rgba(181,80,45,.18);}
+  .routestep.here .rbody strong{color:var(--clay-deep);}
+  .route-timeline{display:flex;overflow-x:auto;gap:8px;margin-top:14px;padding-top:12px;border-top:1px solid var(--sand-deep);}
+  .route-timeline .tstop{
+    flex:0 0 auto;text-align:center;font-size:.68rem;color:#5D6E76;
+    min-width:56px;padding:4px 2px;
+  }
+  .route-timeline .tstop strong{display:block;font-size:.72rem;color:var(--ink);}
+  .route-timeline .tstop.here{color:var(--clay-deep);}
+  .route-timeline .tstop.here strong{color:var(--clay-deep);}
+
+  #backtop{
+    position:fixed;right:14px;bottom:20px;z-index:55;
+    width:42px;height:42px;border-radius:50%;background:var(--clay);color:#fff;border:none;
+    box-shadow:0 3px 10px rgba(0,0,0,.25);display:none;align-items:center;justify-content:center;
+  }
+  #backtop.show{display:flex;}
+  #backtop svg{width:18px;height:18px;stroke:#fff;fill:none;stroke-width:2.4;}
+
+  .hidden{display:none!important;}
+  .empty-msg{text-align:center;color:#8B978F;font-size:.85rem;padding:20px 0;}
+</style>
+</head>
+<body>
+<div class="app-frame">
+
+  <nav class="rail">
+    <button data-page="home" class="active">
+      <svg viewBox="0 0 24 24"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>Home</button>
+    <button data-page="partire">
+      <svg viewBox="0 0 24 24"><rect x="4" y="7" width="16" height="13" rx="2"/><path d="M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/></svg>Partire</button>
+    <button data-page="itinerario">
+      <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="3" x2="8" y2="7"/><line x1="16" y1="3" x2="16" y2="7"/></svg>Itinerario</button>
+    <button data-page="cenote">
+      <svg viewBox="0 0 24 24"><path d="M12 2c3 4 6 7.5 6 11.5A6 6 0 0 1 6 13.5C6 9.5 9 6 12 2z"/></svg>Cenote</button>
+    <button data-page="altro">
+      <svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>Altro</button>
+  </nav>
+
+  <div class="shell">
+
+  <header class="topbar">
+    <div class="topbar-row">
+      <div class="brand">
+        <small>31 DIC 2026 → 11 GEN 2027</small>
+        <strong>Yucatán &amp; CDMX</strong>
+      </div>
+      <button class="icon-btn" id="searchToggle" aria-label="Cerca">
+        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      </button>
+    </div>
+    <div class="searchwrap" id="searchWrap">
+      <input type="text" id="searchInput" placeholder="Cerca città, cibo, documenti…">
+    </div>
+  </header>
+
+  <main id="scrollArea">
+
+    <!-- ============ HOME ============ -->
+    <section class="page active" id="page-home">
+      <div id="homeStatus"></div>
+
+      <div class="card" id="routeMapCard">
+        <h3 style="margin-bottom:10px;">Il percorso</h3>
+        <div id="routeMap"></div>
+      </div>
+
+      <div class="mini-strip" id="miniStrip"></div>
+
+      <div class="quick-grid">
+        <button data-goto="partire">🧳<strong>Prima di Partire</strong>Documenti e prenotazioni</button>
+        <button data-goto="itinerario">🗺️<strong>Itinerario</strong>Tappe, alloggi e attività</button>
+        <button data-goto="altro">🌮<strong>Food</strong>Cosa provare oggi</button>
+        <button data-goto="cenote">💧<strong>Cenote</strong>Chukum, Oxman, Xkeken…</button>
+      </div>
+
+      <h3>Note rapide</h3>
+      <div class="card">
+        <p class="muted">Cambio indicativo: 1 € ≈ 20 MXN (verifica prima di partire).</p>
+        <p class="muted">Fuso orario Yucatán/CDMX: -7h rispetto all'Italia (-6h con ora legale italiana).</p>
+      </div>
+    </section>
+
+    <!-- ============ ITINERARIO ============ -->
+    <section class="page" id="page-itinerario">
+      <h2>Itinerario</h2>
+      <div id="itineraryList"></div>
+    </section>
+
+    <section class="page" id="page-cenote">
+      <h2>Cenote</h2>
+      <p class="muted" style="margin-bottom:12px;">Vicino a Valladolid e Mérida — organizzali in base al tempo che avete.</p>
+      <div id="cenoteList"></div>
+    </section>
+
+    <!-- ============ PRIMA DI PARTIRE ============ -->
+    <section class="page" id="page-partire">
+      <h2>Prima di Partire</h2>
+
+      <details class="acc" open>
+        <summary><div class="acc-title"><strong>Documenti e Voli</strong><span>Voli di andata, interno e ritorno</span></div>
+          <svg class="chev" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></summary>
+        <div class="acc-body">
+
+          <div class="flight-card">
+            <div class="flight-card-title">✈️ Volo di Andata — 31/12/2026</div>
+            <div class="flight-leg">
+              <div class="flight-route">Napoli → Parigi CDG</div>
+              <div class="flight-airline">Air France <strong>AF1579</strong></div>
+              <div class="flight-times"><strong>06:05</strong> → <strong>08:40</strong></div>
+            </div>
+            <div class="flight-leg">
+              <div class="flight-route">Parigi CDG → Cancún</div>
+              <div class="flight-airline">Air France <strong>AF0650</strong></div>
+              <div class="flight-times"><strong>13:10</strong> → <strong>18:25</strong></div>
+            </div>
+          </div>
+
+          <div class="flight-card">
+            <div class="flight-card-title">🛫 Volo Interno — 08/01/2027</div>
+            <div class="flight-leg">
+              <div class="flight-route">Cancún → Città del Messico</div>
+              <div class="flight-airline">Ancora da acquistare</div>
+              <div class="flight-note">Coerente con il check-out di Bacalar la mattina dell'8/1.</div>
+            </div>
+          </div>
+
+          <div class="flight-card">
+            <div class="flight-card-title">🛬 Volo di Ritorno — 11–12/01/2027</div>
+            <div class="flight-leg">
+              <div class="flight-route">Città del Messico → Madrid</div>
+              <div class="flight-airline">Iberia <strong>IB0312</strong></div>
+              <div class="flight-times">Partenza <strong>00:05</strong> (notte tra l'11 e il 12/01)</div>
+            </div>
+            <div class="flight-leg">
+              <div class="flight-route">Madrid → Napoli</div>
+              <div class="flight-airline">Iberia <strong>IB0981</strong></div>
+              <div class="flight-times"><strong>19:55</strong></div>
+            </div>
+          </div>
+
+        </div>
+      </details>
+
+      <details class="acc">
+        <summary><div class="acc-title"><strong>Prenotazioni Alloggi</strong><span>Indirizzi e contatti diretti</span></div>
+          <svg class="chev" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></summary>
+        <div class="acc-body" id="lodgingBody"></div>
+      </details>
+
+      <details class="acc">
+        <summary><div class="acc-title"><strong>Autonoleggio</strong><span>Ritiro, riconsegna, assicurazione</span></div>
+          <svg class="chev" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></summary>
+        <div class="acc-body">
+          <div class="field"><label>Società di noleggio</label><div class="val">Fasttour — riferimento/prenotazione: PG Davide</div></div>
+          <div class="field"><label>Ritiro</label><div class="val">[Luogo, data, ora — da confermare]</div></div>
+          <div class="field"><label>Riconsegna</label><div class="val">[Luogo, data, ora — da confermare]</div></div>
+          <div class="field"><label>Tipo di auto</label><div class="val">[Categoria veicolo prenotata]</div></div>
+          <div class="field"><label>Assicurazione</label><div class="val">[Coperture incluse / franchigia]</div></div>
+          <div class="field"><label>Assistenza stradale</label><div class="val">[Numero da chiamare in caso di guasto/incidente]</div></div>
+          <div class="field"><label>Documenti richiesti</label><div class="val">Patente + carta di credito intestatario + passaporto</div></div>
+        </div>
+      </details>
+
+      <details class="acc">
+        <summary><div class="acc-title"><strong>Checklist Valigia</strong><span>Spuntala mentre prepari lo zaino</span></div>
+          <svg class="chev" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></summary>
+        <div class="acc-body">
+          <h4 style="margin:0 0 4px;color:var(--clay-deep);font-size:.85rem;">BAGAGLI</h4>
+          <div class="baggage-wrap">
+            <div class="baggage-card">
+              <span class="bicon">🎒</span>
+              <strong>Bagaglio personale</strong>
+              <div class="bspec">Dimensioni max: 40 × 30 × 15 cm</div>
+              <div class="bnote">Zainetto o borsa da posizionare sotto il sedile.</div>
+            </div>
+            <div class="baggage-card">
+              <span class="bicon">🧳</span>
+              <strong>Bagaglio a mano</strong>
+              <div class="bspec">Peso max: 12 kg</div>
+              <div class="bspec">Dimensioni max: 55 × 35 × 25 cm</div>
+              <div class="bnote">Valigia da cabina riposta nelle cappelliere.</div>
+            </div>
+          </div>
+          <div class="checklist" style="margin-bottom:10px;">
+            <label><input type="checkbox" id="baggageChecked"><span>Peso verificato prima della partenza</span></label>
+          </div>
+          <div class="checklist" id="checklistPacking"></div>
+        </div>
+      </details>
+
+      <details class="acc">
+        <summary><div class="acc-title"><strong>Salute e Assicurazione</strong><span>Polizza, vaccinazioni, farmaci</span></div>
+          <svg class="chev" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></summary>
+        <div class="acc-body">
+          <div class="field"><label>Assicurazione viaggio</label><div class="val">[Compagnia + numero polizza]</div></div>
+          <div class="field"><label>Numero emergenza assicurazione</label><div class="val">[Numero da chiamare 24h]</div></div>
+          <div class="field"><label>Farmaci personali</label><div class="val">[Elenco farmaci da portare]</div></div>
+          <div class="field"><label>Vaccinazioni consigliate</label><div class="val">[Da verificare con ASL/medico viaggiatore]</div></div>
+        </div>
+      </details>
+
+      <details class="acc">
+        <summary><div class="acc-title"><strong>Soldi e Pagamenti</strong><span>Contanti, carte, mance</span></div>
+          <svg class="chev" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></summary>
+        <div class="acc-body">
+          <div class="checklist" style="margin-bottom:10px;">
+            <label><input type="checkbox" id="bankNotice"><span>Avviso banca effettuato per utilizzo carte in Messico</span></label>
+          </div>
+
+          <div class="field">
+            <label>Cash disponibile (EUR)</label>
+            <input type="number" inputmode="decimal" min="0" step="1" id="moneyCash" placeholder="0" style="width:100%;padding:9px 10px;border-radius:var(--radius-s);border:1px solid var(--line);font-size:.95rem;background:#fff;">
+          </div>
+          <div class="field">
+            <label>Carta prepagata (EUR)</label>
+            <input type="number" inputmode="decimal" min="0" step="1" id="moneyPrepaid" placeholder="0" style="width:100%;padding:9px 10px;border-radius:var(--radius-s);border:1px solid var(--line);font-size:.95rem;background:#fff;">
+          </div>
+          <div class="field" style="margin-top:4px;">
+            <label>Totale budget disponibile</label>
+            <div class="val" id="moneyTotal" style="font-weight:700;color:var(--teal-deep);">€ 0</div>
+          </div>
+
+          <div class="tips-card">
+            <h4 class="tips-title">💰 Consigli Utili</h4>
+            <ul class="tips-list">
+              <li><strong>Dove prelevare:</strong> BBVA, Santander, Banorte</li>
+              <li>Evitare gli ATM <strong>Euronet</strong> quando possibile.</li>
+              <li>Quando un ATM propone <em>"Conversion to EUR"</em>, <em>"Guaranteed Exchange Rate"</em> o opzioni simili, selezionare sempre <strong>"Decline Conversion"</strong>, <strong>"Continue Without Conversion"</strong> oppure <strong>"No"</strong>.</li>
+              <li>Tenere sempre una piccola riserva di contanti per emergenze, carburante, mercati e piccoli acquisti.</li>
+              <li>I caselli autostradali possono richiedere il pagamento in pesos; non fare affidamento esclusivamente sulle carte.</li>
+              <li><strong>Mance consigliate:</strong>
+                <ul>
+                  <li>Ristorante: 10-15%</li>
+                  <li>Facchini e personale hotel: 20-40 MXN</li>
+                  <li>Benzinaio (servizi aggiuntivi): 5-20 MXN</li>
+                </ul>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </details>
+    </section>
+
+    <!-- ============ ALTRO (Food / Note / Impostazioni) ============ -->
+    <section class="page" id="page-altro">
+      <div class="subtabbar" id="altroTabs">
+        <button data-sub="food" class="active">Food</button>
+        <button data-sub="note">Note</button>
+        <button data-sub="impostazioni">Impostazioni</button>
+      </div>
+
+      <div class="subpage active" id="sub-food">
+        <div class="filterbar" id="foodFilter"></div>
+        <div class="filterbar stars-filter" id="foodStarFilter"></div>
+        <div class="foodgrid" id="foodGrid"></div>
+      </div>
+
+      <div class="subpage" id="sub-note">
+        <h3>💡 Note Utili di Viaggio</h3>
+
+        <div class="tips-card">
+          <h4 class="tips-title">💱 Cambio e Pagamenti</h4>
+          <ul class="tips-list">
+            <li><strong>Cambio indicativo:</strong> 1 € ≈ 20 MXN</li>
+            <li><strong>ATM consigliati:</strong> BBVA, Santander, Banorte</li>
+            <li>Evitare ATM <strong>Euronet</strong> quando possibile.</li>
+            <li>Se compare <em>"Conversion to EUR"</em> o <em>"Guaranteed Exchange Rate"</em>, selezionare sempre <strong>NO</strong> / <strong>Decline Conversion</strong> / <strong>Continue Without Conversion</strong>.</li>
+          </ul>
+        </div>
+
+        <div class="tips-card">
+          <h4 class="tips-title">🕒 Fuso Orario</h4>
+          <ul class="tips-list">
+            <li><strong>Yucatán e Città del Messico:</strong> -7 ore rispetto all'Italia</li>
+            <li><strong>Con ora legale italiana:</strong> -6 ore</li>
+          </ul>
+        </div>
+
+        <div class="tips-card">
+          <h4 class="tips-title">📞 Emergenze</h4>
+          <ul class="tips-list">
+            <li><strong>Numero unico emergenze:</strong> 911</li>
+          </ul>
+        </div>
+
+        <div class="tips-card">
+          <h4 class="tips-title">🚗 Guida e Spostamenti</h4>
+          <ul class="tips-list">
+            <li>Attenzione ai <strong>"Topes"</strong> (dossi rallentatori spesso poco visibili).</li>
+            <li>Evitare lunghi trasferimenti notturni quando possibile.</li>
+            <li>Conservare sempre una piccola riserva di contanti per eventuali pedaggi.</li>
+            <li>Mai partire per una tratta lunga con:
+              <ul>
+                <li>meno di mezzo serbatoio;</li>
+                <li>meno di 500 MXN in contanti.</li>
+              </ul>
+            </li>
+          </ul>
+        </div>
+
+        <div class="tips-card">
+          <h4 class="tips-title">⛽ Carburante</h4>
+          <ul class="tips-list">
+            <li>Preferire distributori <strong>PEMEX</strong>.</li>
+            <li>Controllare che la pompa parta da <strong>0.00</strong> prima del rifornimento.</li>
+            <li>Tenere una riserva di 500-1000 MXN per carburante ed emergenze.</li>
+          </ul>
+        </div>
+
+        <div class="tips-card">
+          <h4 class="tips-title">📱 Smartphone e Internet</h4>
+          <ul class="tips-list">
+            <li>Verificare il corretto funzionamento della eSIM.</li>
+            <li>Scaricare le mappe offline di Google Maps.</li>
+            <li>Conservare screenshot di:
+              <ul>
+                <li>passaporto</li>
+                <li>voli</li>
+                <li>prenotazioni</li>
+                <li>assicurazione viaggio</li>
+              </ul>
+            </li>
+          </ul>
+        </div>
+
+        <div class="tips-card">
+          <h4 class="tips-title">💵 Mance Consigliate</h4>
+          <ul class="tips-list">
+            <li><strong>Ristorante:</strong> 10-15%</li>
+            <li><strong>Facchini e personale hotel:</strong> 20-40 MXN</li>
+            <li><strong>Benzinaio</strong> (servizi aggiuntivi): 5-20 MXN</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="subpage" id="sub-impostazioni">
+        <div class="card">
+          <h3>Dati locali</h3>
+          <p class="muted">Checklist e food "provati" sono salvati solo su questo telefono/browser (localStorage), non su un server.</p>
+          <button id="resetData" style="margin-top:10px;background:var(--clay);color:#fff;border:none;padding:10px 14px;border-radius:8px;font-size:.85rem;">Reimposta tutti i dati salvati</button>
+        </div>
+        <div class="card">
+          <h3>Info app</h3>
+          <p class="muted">Guida di viaggio personale — funziona offline, un solo file HTML, nessuna libreria esterna.</p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <button id="backtop" aria-label="Torna in cima">
+    <svg viewBox="0 0 24 24"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
+  </button>
+
+  </div><!-- /.shell -->
+
+</div><!-- /.app-frame -->
+
+<script>
+(function(){
+  "use strict";
+
+  /* ---------------- DATA ---------------- */
+  var TRIP_START = new Date(2026,11,31); // 31/12/2026
+  var TRIP_END   = new Date(2027,0,11);  // 11/01/2027
+
+  var itinerary = [
+    {date:new Date(2026,11,31), city:"Cancún",         label:"Arrivo",        note:"Volo AF1579 Napoli→Parigi 06:05–08:40, poi AF0650 Parigi→Cancún 13:10–18:25. Prima notte a Cancún."},
+    {date:new Date(2027,0,1),   city:"Isla Mujeres",   label:"Notte 1/2",     note:"Check-in Villa Elena. Traghetto da Puerto Juárez/Gran Puerto verso l'isola."},
+    {date:new Date(2027,0,2),   city:"Isla Mujeres",   label:"Notte 2/2",     note:"Giornata libera: spiagge e Punta Sur."},
+    {date:new Date(2027,0,3),   city:"Valladolid",     label:"Notte unica",   note:"Check-out Villa Elena, trasferimento verso l'entroterra, centro coloniale e cenotes vicini."},
+    {date:new Date(2027,0,4),   city:"Mérida",         label:"Notte 1/2",     note:"Trasferimento a Mérida, centro storico."},
+    {date:new Date(2027,0,5),   city:"Mérida",         label:"Notte 2/2",     note:"Mercati, hacienda o escursione facoltativa."},
+    {date:new Date(2027,0,6),   city:"Bacalar",        label:"Notte 1/2",     note:"Check-in Hotel My Love Bacalar Lagoon Front."},
+    {date:new Date(2027,0,7),   city:"Bacalar",        label:"Notte 2/2",     note:"Tour in barca sulla laguna."},
+    {date:new Date(2027,0,8),   city:"Città del Messico", label:"Giorno 1",   note:"Check-out Bacalar la mattina, trasferimento a Cancún e volo interno per CDMX (8/1 — da acquistare)."},
+    {date:new Date(2027,0,9),   city:"Città del Messico", label:"Giorno 2",   note:"Centro Storico: Zócalo, Palacio de Bellas Artes."},
+    {date:new Date(2027,0,10),  city:"Città del Messico", label:"Giorno 3",   note:"Roma-Condesa o Coyoacán / Frida Kahlo."},
+    {date:new Date(2027,0,11),  city:"Città del Messico", label:"Partenza",   note:"Ultime ore in città. Volo di ritorno IB0312 CDMX→Madrid 00:05 (notte tra 11 e 12/01), poi IB0981 Madrid→Napoli 19:55."}
+  ];
+
+  var cities = [
+    {key:"cancun", name:"Cancún", emoji:"🏖️", dateRange:"31/12/2026", nights:"1 notte", overview:"Hub di arrivo e primo assaggio dei Caraibi messicani.",
+      lodging:{name:"[Nome hotel da confermare]", address:null, checkin:"[da confermare]", checkout:"[da confermare]", query:null},
+      fare:[{t:"Zona Hotelera",d:"per una prima passeggiata sulla spiaggia",q:"Zona Hotelera, Cancún"},
+            {t:"Centro",d:"per un'atmosfera più locale e mercati",q:"Centro, Cancún"}],
+      mangiare:[{t:"Mercado 28",d:"street food e ristoranti locali",q:"Mercado 28, Cancún"},
+                {t:"Ristoranti sul Malecón",d:"per pesce fresco",q:"Malecón Cancún"}],
+      trasporti:"Taxi ufficiali dell'aeroporto o transfer privato prenotato; bus R1 lungo la Zona Hotelera.",
+      sapere:["Contratta sempre il prezzo del taxi prima di salire se non è a tassametro.",
+              "Info transfer aeroporto → hotel da inserire qui."],
+      nextStop:{to:"Isla Mujeres", mode:"⛴️ Traghetto"}},
+    {key:"islamujeres", name:"Isla Mujeres", emoji:"🏝️", dateRange:"01/01/2027 → 03/01/2027", nights:"2 notti", overview:"Isola caraibica rilassata, ideale per spiaggia e snorkeling.",
+      lodging:{name:"Villa Elena", address:null, checkin:"01/01/2027", checkout:"03/01/2027", query:"Villa Elena, Isla Mujeres"},
+      fare:[{t:"Playa Norte",d:"il mare più bello dell'isola",q:"Playa Norte, Isla Mujeres"},
+            {t:"Punta Sur",d:"il punto panoramico dell'isola",q:"Punta Sur, Isla Mujeres"},
+            {t:"MUSA",d:"museo subacqueo, ottimo per lo snorkeling",q:"MUSA Museo Subacuático de Arte, Isla Mujeres"},
+            {t:"Escursione a Isla Contoy",d:"riserva naturale protetta, escursione in giornata: ottima per snorkeling, spiagge incontaminate e osservazione della fauna",q:"Isla Contoy"}],
+      mangiare:[{t:"Chiringuiti costa est",d:"raggiungibili in golf cart",q:"restaurants east coast Isla Mujeres"},
+                {t:"Mercato locale",d:"per frutta fresca",q:"Mercado Municipal, Isla Mujeres"},
+                {t:"Mango Café",d:"ottimo per colazioni e brunch",q:"Mango Café, Isla Mujeres"},
+                {t:"Los Tacos de Humo",d:"tacos molto apprezzati",q:"Los Tacos de Humo, Isla Mujeres"},
+                {t:"Jax Bar & Grill",d:"ristorante sul mare",q:"Jax Bar & Grill, Isla Mujeres"}],
+      trasporti:"Traghetto da Puerto Juárez o Gran Puerto (Cancún) — verificare orari e molo di partenza. Sull'isola: golf cart a noleggio.",
+      sapere:["Noleggio golf cart consigliato per visitare l'isola.",
+              "Occhio alle meduse in alcune stagioni.",
+              "Playa Norte è migliore nelle ore mattutine, spettacolare anche al tramonto.",
+              "Punta Sur è ideale per l'alba e i panorami.",
+              "Verificare gli orari dell'ultimo traghetto per Cancún."],
+      nextStop:{to:"Valladolid", mode:"🚗 Traghetto + auto"}},
+    {key:"valladolid", name:"Valladolid", emoji:"⛪", dateRange:"03/01/2027 → 04/01/2027", nights:"1 notte", overview:"Cittadina coloniale, base perfetta per i cenotes dello Yucatán.",
+      lodging:{name:"Casa Sílice Guesthouse", address:null, checkin:"03/01/2027", checkout:"04/01/2027", query:"Casa Sílice Guesthouse, Valladolid"},
+      fare:[{t:"Cenote Zací",d:"proprio dentro il centro città",q:"Cenote Zací, Valladolid"},
+            {t:"Calzada de los Frailes",d:"la strada coloniale più fotogenica",q:"Calzada de los Frailes, Valladolid"},
+            {t:"Cenote Oxman",d:"cenote a cielo aperto con altalena sull'acqua, dentro una hacienda",q:"Cenote Oxman, Valladolid"},
+            {t:"Cenote Xkeken",d:"cenote sotterraneo con stalattiti, illuminato da un foro nel soffitto",q:"Cenote Xkeken, Dzitnup"},
+            {t:"Convento de San Bernardino de Siena",d:"uno dei monumenti più importanti della città",q:"Convento de San Bernardino de Siena, Valladolid"},
+            {t:"Chichén Itzá",d:"consigliata la visita di prima mattina per evitare folla e caldo; una delle Nuove Sette Meraviglie del Mondo",q:"Chichén Itzá"}],
+      mangiare:[{t:"Cocina de Doña Mary",d:"cucina yucateca casalinga",q:"Cocina de Doña Mary, Valladolid"},
+                {t:"Mercado municipal",d:"bancarelle e street food",q:"Mercado Municipal, Valladolid"}],
+      trasporti:"A piedi nel centro; taxi/colectivo per i cenotes più lontani.",
+      sapere:["Meglio visitare i cenote la mattina presto.",
+              "Centro storico facilmente visitabile a piedi.",
+              "Ottima base anche per una tappa veloce a Chichén Itzá se si vuole aggiungere."],
+      nextStop:{to:"Mérida", mode:"🚗 Circa 2 ore"}},
+    {key:"merida", name:"Mérida", emoji:"🏛️", dateRange:"04/01/2027 → 06/01/2027", nights:"2 notti", overview:"Capitale culturale dello Yucatán, elegante e vivace.",
+      lodging:{name:"Hotel Boutique La Mision De Fray Diego", address:null, checkin:"04/01/2027", checkout:"06/01/2027", query:"Hotel Boutique La Mision De Fray Diego, Mérida"},
+      fare:[{t:"Paseo de Montejo",d:"il viale elegante della città",q:"Paseo de Montejo, Mérida"},
+            {t:"Mercado Lucas de Gálvez",d:"il grande mercato coperto",q:"Mercado Lucas de Gálvez, Mérida"},
+            {t:"Cenotes di Cuzamá",d:"escursione in carretto su rotaie",q:"Cenotes Cuzamá"},
+            {t:"Izamal",d:"la famosa \"città gialla\", Pueblo Mágico dello Yucatán",q:"Izamal, Yucatán"},
+            {t:"Cenote Chukum",d:"cenote semi-aperto con acqua cristallina",q:"Cenote Chukum, Homún"},
+            {t:"Uxmal",d:"importante sito archeologico Maya",q:"Uxmal"},
+            {t:"Maní",d:"Pueblo Mágico tradizionale dello Yucatán",q:"Maní, Yucatán"},
+            {t:"Plaza Grande",d:"la piazza principale del centro storico",q:"Plaza Grande, Mérida"}],
+      mangiare:[{t:"La Chaya Maya",d:"piatti tipici yucatechi",q:"La Chaya Maya, Mérida"},
+                {t:"Paseo de Montejo di sera",d:"street food serale",q:"Paseo de Montejo, Mérida"},
+                {t:"Museo de la Gastronomía Yucateca (MUGY)",d:"museo con degustazioni di cucina yucateca",q:"MUGY Museo de la Gastronomía Yucateca, Mérida"},
+                {t:"Manjar Blanco",d:"cucina yucateca contemporanea",q:"Manjar Blanco, Mérida"}],
+      trasporti:"Centro percorribile a piedi; taxi/app per spostamenti più lunghi.",
+      sapere:["La domenica il Paseo de Montejo è in gran parte chiuso al traffico, con musica dal vivo in centro.",
+              "Centro storico molto animato nelle ore serali."],
+      nextStop:{to:"Bacalar", mode:"🚗 Circa 4 ore"}},
+    {key:"bacalar", name:"Bacalar", emoji:"💠", dateRange:"06/01/2027 → 08/01/2027", nights:"2 notti", overview:"La Laguna dei Sette Colori: acque turchesi e atmosfera rilassata.",
+      lodging:{name:"Hotel My Love Bacalar Lagoon Front", address:null, checkin:"06/01/2027", checkout:"08/01/2027", query:"Hotel My Love Bacalar Lagoon Front"},
+      fare:[{t:"Tour in barca sulla laguna",d:"Canal de los Piratas, Cenote Azul",q:"Canal de los Piratas, Bacalar"},
+            {t:"Molo del centro",d:"il punto migliore per il tramonto",q:"Malecón de Bacalar"},
+            {t:"Los Rápidos Bacalar",d:"canale naturale con corrente, ideale per relax e bagno: una delle attrazioni più note della laguna",q:"Los Rápidos, Bacalar"},
+            {t:"Forte San Felipe",d:"fortezza coloniale con vista sulla laguna",q:"Fuerte de San Felipe, Bacalar"},
+            {t:"Cenote Azul",d:"cenote profondo direttamente sulla laguna",q:"Cenote Azul, Bacalar"},
+            {t:"Canal de los Piratas",d:"canale con corrente popolare per il bagno",q:"Canal de los Piratas, Bacalar"}],
+      mangiare:[{t:"Ristoranti sul lungolago",d:"con vista sulla laguna",q:"restaurants Malecón Bacalar"}],
+      trasporti:"Centro piccolo, percorribile a piedi; tour in barca da prenotare in loco o online.",
+      sapere:["I colori migliori della laguna si vedono generalmente tra le 11:00 e le 15:00, quando il sole è più alto.",
+              "Prenotare il tour in barca già il primo giorno se il meteo è incerto."],
+      nextStop:{to:"Città del Messico", mode:"🚗 Circa 4h30 fino a Cancún, poi ✈️ volo interno"}},
+    {key:"cdmx", name:"Città del Messico", emoji:"🏙️", dateRange:"08/01/2027 → 11/01/2027", nights:"4 giorni", overview:"Metropoli immensa: arte, storia e gastronomia ad ogni angolo.",
+      lodging:{name:"Hotel El Salvador", address:null, checkin:"08/01/2027", checkout:"12/01/2027", query:"Hotel El Salvador, Ciudad de México"},
+      fareByDay:[
+        {date:"09/01/2027", label:"Giorno 1", blocks:[
+          {time:"Mattina", items:[
+            {t:"Museo Nacional de Antropología", q:"Museo Nacional de Antropología, Ciudad de México"},
+            {t:"Bosque de Chapultepec", q:"Bosque de Chapultepec, Ciudad de México"},
+            {t:"Castello di Chapultepec", q:"Castillo de Chapultepec, Ciudad de México"}
+          ]},
+          {time:"Pranzo", items:[
+            {t:"Zona Chapultepec / Polanco", q:"Polanco, Ciudad de México"}
+          ]},
+          {time:"Pomeriggio", items:[
+            {t:"Paseo de la Reforma", q:"Paseo de la Reforma, Ciudad de México"},
+            {t:"Ángel de la Independencia", q:"Ángel de la Independencia, Ciudad de México"},
+            {t:"Quartiere Roma Norte", q:"Roma Norte, Ciudad de México"},
+            {t:"Quartiere Condesa", q:"Condesa, Ciudad de México"}
+          ]},
+          {time:"Sera", items:[
+            {t:"Cena nella zona Roma Norte / Condesa", q:"restaurants Roma Norte Ciudad de México"}
+          ]}
+        ]},
+        {date:"10/01/2027", label:"Giorno 2", blocks:[
+          {time:"Mattina", items:[
+            {t:"Teotihuacán", q:"Teotihuacan, México"},
+            {t:"Piramide del Sole", q:"Pirámide del Sol, Teotihuacan"},
+            {t:"Piramide della Luna", q:"Pirámide de la Luna, Teotihuacan"},
+            {t:"Avenida de los Muertos", q:"Calzada de los Muertos, Teotihuacan"}
+          ]},
+          {time:"Pranzo", items:[
+            {t:"Mercado de Coyoacán", q:"Mercado de Coyoacán, Ciudad de México"}
+          ]},
+          {time:"Pomeriggio", items:[
+            {t:"Quartiere Coyoacán", q:"Coyoacán, Ciudad de México"},
+            {t:"Jardín Centenario", q:"Jardín Centenario, Ciudad de México"},
+            {t:"Casa Azul (Frida Kahlo)", q:"Museo Frida Kahlo, Ciudad de México"}
+          ]},
+          {time:"Tardo pomeriggio / tramonto", items:[
+            {t:"Xochimilco", q:"Xochimilco, Ciudad de México"},
+            {t:"Giro in trajinera", q:"Embarcadero Xochimilco, Ciudad de México"}
+          ]}
+        ]},
+        {date:"11/01/2027", label:"Ultima giornata", blocks:[
+          {time:"Mattina", items:[
+            {t:"Zócalo", q:"Zócalo, Ciudad de México"},
+            {t:"Catedral Metropolitana", q:"Catedral Metropolitana, Ciudad de México"},
+            {t:"Palacio Nacional", q:"Palacio Nacional, Ciudad de México"},
+            {t:"Templo Mayor", q:"Templo Mayor, Ciudad de México"}
+          ]},
+          {time:"Pranzo", items:[
+            {t:"Centro storico", q:"restaurants Centro Histórico Ciudad de México"}
+          ]},
+          {time:"Pomeriggio", items:[
+            {t:"Palacio de Bellas Artes", q:"Palacio de Bellas Artes, Ciudad de México"},
+            {t:"Alameda Central", q:"Alameda Central, Ciudad de México"},
+            {t:"Calle Madero", q:"Calle Madero, Ciudad de México"}
+          ]},
+          {time:"Tramonto", items:[
+            {t:"Torre Latinoamericana", q:"Torre Latinoamericana, Ciudad de México"}
+          ]},
+          {time:"Sera", items:[
+            {t:"Recupero bagagli in hotel", q:null},
+            {t:"Trasferimento verso aeroporto", q:"Aeropuerto Internacional Ciudad de México"}
+          ]}
+        ]}
+      ],
+      mangiare:[{t:"Mercado Roma",d:"un mix di proposte gastronomiche",q:"Mercado Roma, Ciudad de México"},
+                {t:"Taquerías del quartiere",d:"da scoprire dove si soggiorna",q:"tacos Roma Norte Ciudad de México"},
+                {t:"El Vilsito",d:"famoso per i tacos al pastor",q:"El Vilsito, Ciudad de México"},
+                {t:"Taquería Orinoco",d:"taquería molto amata dai locali",q:"Taquería Orinoco, Ciudad de México"}],
+      trasporti:"Metro efficiente ed economica; Uber consigliato di sera. Evitare taxi presi per strada non ufficiali.",
+      sapere:["Altitudine di circa 2.240 metri: può dare lieve affanno i primi giorni, idratarsi bene.",
+              "Uber generalmente consigliato rispetto ai taxi di strada.",
+              "Traffico intenso nelle ore di punta."],
+      nextStop:{final:true, mode:"✈️ Volo internazionale di rientro"}}
+  ];
+
+  var routeStops = [
+    {name:"Cancún",             sub:"31/12 — arrivo",  dates:[new Date(2026,11,31)]},
+    {name:"Isla Mujeres",       sub:"01–03/01",        dates:[new Date(2027,0,1), new Date(2027,0,2)]},
+    {name:"Valladolid",         sub:"03/01",           dates:[new Date(2027,0,3)]},
+    {name:"Mérida",             sub:"04–05/01",        dates:[new Date(2027,0,4), new Date(2027,0,5)]},
+    {name:"Bacalar",            sub:"06–08/01",        dates:[new Date(2027,0,6), new Date(2027,0,7)]},
+    {name:"Cancún",             sub:"08/01 — transito", dates:[], flight:true},
+    {name:"Città del Messico",  sub:"08–11/01",        dates:[new Date(2027,0,8), new Date(2027,0,9), new Date(2027,0,10), new Date(2027,0,11)]}
+  ];
+
+  var packingChecklist = [
+    "Powerbank",
+    "Cavo Lightning iPhone 11",
+    "Caricatore auto",
+    "Maschera snorkeling",
+    "Passaporto + fotocopia/foto digitale",
+    "Costume da bagno (almeno 2)",
+    "Crema solare alta protezione",
+    "Repellente per zanzare",
+    "Adattatore di corrente (Messico: prese tipo A/B, 127V)",
+    "Documenti di viaggio stampati",
+    "Farmaci personali",
+    "Abbigliamento leggero + un cambio più coprente per CDMX (sera fresca)",
+    "Zaino piccolo per le escursioni giornaliere",
+    "Contanti in pesos per le prime spese"
+  ];
+
+  var foods = [
+    // ---- PIATTI ----
+    {name:"Tacos al pastor", cat:"Piatto", spice:2, stars:5, place:"CDMX", emoji:"🌮", desc:"Maiale marinato cotto allo spiedo verticale, servito in tortilla con ananas e coriandolo."},
+    {name:"Gringas", cat:"Piatto", spice:1, stars:4, place:"CDMX", emoji:"🌯", desc:"Tortilla di farina con carne al pastor e formaggio fuso, cotta sulla piastra."},
+    {name:"Tlacoyos", cat:"Piatto", spice:0, stars:3, place:"CDMX", emoji:"🫓", desc:"Ovale di masa di mais ripieno di fagioli o fave, cotto e guarnito con nopal e formaggio."},
+    {name:"Huaraches", cat:"Piatto", spice:1, stars:3, place:"CDMX", emoji:"🫓", desc:"Base di masa allungata a forma di sandalo, condita con fagioli, carne e salsa."},
+    {name:"Quesadillas", cat:"Piatto", spice:0, stars:3, place:"CDMX", emoji:"🧀", desc:"Tortilla ripiegata e farcita con formaggio filante e altri ripieni a scelta, cotta in piastra."},
+    {name:"Gorditas", cat:"Piatto", spice:1, stars:3, place:"CDMX", emoji:"🫓", desc:"Tasca di masa spessa, fritta o grigliata, farcita con carne, formaggio o verdure."},
+    {name:"Empanadas", cat:"Piatto", spice:0, stars:3, place:"Tutto il Messico", emoji:"🥟", desc:"Fagottino di pasta ripieno di carne, formaggio o verdure, fritto o al forno."},
+    {name:"Chilaquiles", cat:"Piatto", spice:1, stars:5, place:"CDMX", emoji:"🍳", desc:"Totopos di mais stufati in salsa verde o rossa, spesso serviti a colazione con uovo e panna."},
+    {name:"Pozole", cat:"Piatto", spice:1, stars:4, place:"CDMX", emoji:"🍲", desc:"Zuppa densa di mais cacahuazintle e carne, guarnita con lattuga, ravanello e origano."},
+    {name:"Mole poblano", cat:"Piatto", spice:1, stars:3, place:"CDMX", emoji:"🍛", desc:"Salsa complessa a base di peperoncini, spezie e cioccolato, servita su pollo o tacchino."},
+    {name:"Enchiladas", cat:"Piatto", spice:1, stars:3, place:"CDMX", emoji:"🌶️", desc:"Tortillas arrotolate ripiene, ricoperte di salsa piccante e formaggio gratinato."},
+    {name:"Tostadas di tonno", cat:"Piatto", spice:0, stars:3, place:"CDMX", emoji:"🐟", desc:"Tortilla fritta croccante, coperta con tonno marinato e verdure fresche."},
+    {name:"Tostadas di ceviche", cat:"Piatto", spice:0, stars:3, place:"CDMX", emoji:"🐚", desc:"Tortilla croccante con ceviche di pesce o frutti di mare agli agrumi."},
+    {name:"Esquites", cat:"Piatto", spice:1, stars:3, place:"CDMX", emoji:"🌽", desc:"Chicchi di mais in brodo con maionese, lime, peperoncino e formaggio."},
+    {name:"Barbacoa", cat:"Piatto", spice:1, stars:3, place:"CDMX", emoji:"🍖", desc:"Carne (spesso agnello) cotta lentamente al vapore avvolta in foglie di maguey."},
+    {name:"Mixiotes", cat:"Piatto", spice:1, stars:3, place:"CDMX", emoji:"🌿", desc:"Carne marinata al peperoncino, cotta al vapore in un involucro di foglia di maguey."},
+    {name:"Chiles en nogada", cat:"Piatto", spice:0, stars:3, place:"Centro Messico", emoji:"🫑", desc:"Peperone poblano ripieno di carne e frutta, coperto di crema di noci e melagrana."},
+    {name:"Ceviche", cat:"Piatto", spice:0, stars:5, place:"Coste/Yucatán", emoji:"🍤", desc:"Pesce o frutti di mare crudi marinati agli agrumi con cipolla, coriandolo e peperoncino."},
+    {name:"Cochinita pibil", cat:"Piatto", spice:1, stars:5, place:"Yucatán", emoji:"🐖", desc:"Maiale marinato in achiote e cotto lentamente, avvolto in foglia di banano."},
+    {name:"Sopa de lima", cat:"Piatto", spice:0, stars:5, place:"Yucatán", emoji:"🍋", desc:"Zuppa di pollo agli agrumi, un classico confortante della cucina yucateca."},
+    {name:"Panuchos", cat:"Piatto", spice:1, stars:4, place:"Yucatán", emoji:"🌮", desc:"Tortilla ripiena di fagioli, fritta e guarnita con pollo o tacchino sfilacciato."},
+    {name:"Salbutes", cat:"Piatto", spice:0, stars:4, place:"Yucatán", emoji:"🌮", desc:"Tortilla soffice fritta, non farcita, guarnita con pollo, cavolo e avocado."},
+    {name:"Tamales Piib", cat:"Piatto", spice:0, stars:3, place:"Yucatán", emoji:"🌽", desc:"Grande tamale cotto sottoterra, tipico delle celebrazioni yucateche."},
+    {name:"Vaporcitos", cat:"Piatto", spice:0, stars:3, place:"Yucatán", emoji:"🌽", desc:"Piccoli tamales cotti al vapore, morbidi e delicati."},
+    {name:"Brazo de reina", cat:"Piatto", spice:0, stars:3, place:"Yucatán", emoji:"🌿", desc:"Tamale allungato ripieno di chaya (verdura locale) e uovo sodo."},
+
+    // ---- DOLCI ----
+    {name:"Churros", cat:"Dolce", spice:0, stars:3, place:"Messico", emoji:"🥖", desc:"Bastoncini di pasta fritta ricoperti di zucchero e cannella, spesso con cioccolato."},
+    {name:"Pan dulce", cat:"Dolce", spice:0, stars:3, place:"Messico", emoji:"🥐", desc:"Ampia famiglia di pani dolci messicani, da gustare a colazione o merenda."},
+    {name:"Dessert con cajeta", cat:"Dolce", spice:0, stars:3, place:"Messico", emoji:"🍮", desc:"Dolci a base di cajeta, una confettura di latte di capra caramellato."},
+    {name:"Marquesitas", cat:"Dolce", spice:0, stars:5, place:"Yucatán", emoji:"🧇", desc:"Cialda croccante ripiena di formaggio dolce Edam e Nutella o dulce de leche."},
+    {name:"Flan napolitano", cat:"Dolce", spice:0, stars:3, place:"Messico", emoji:"🍮", desc:"Budino di uova e latte condensato con una versione più densa e cremosa del flan classico."},
+    {name:"Arroz con leche", cat:"Dolce", spice:0, stars:3, place:"Messico", emoji:"🍚", desc:"Riso cotto nel latte con cannella e zucchero, dolce semplice e confortante."},
+
+    // ---- BEVANDE ----
+    {name:"Mezcal", cat:"Bevanda", spice:0, stars:4, place:"Messico", emoji:"🥃", desc:"Distillato di agave affumicato, da assaggiare liscio in piccole quantità."},
+    {name:"Pulque", cat:"Bevanda", spice:0, stars:3, place:"Messico", emoji:"🍶", desc:"Bevanda fermentata e densa ricavata dalla linfa dell'agave, dal sapore antico."},
+    {name:"Horchata", cat:"Bevanda", spice:0, stars:5, place:"Messico", emoji:"🥤", desc:"Bevanda fresca a base di riso, cannella e latte, molto dissetante."},
+    {name:"Agua de Jamaica", cat:"Bevanda", spice:0, stars:4, place:"Messico", emoji:"🧉", desc:"Infuso freddo di fiori di ibisco, leggermente acidulo e dissetante."},
+    {name:"Agua de tamarindo", cat:"Bevanda", spice:0, stars:3, place:"Messico", emoji:"🧉", desc:"Bevanda fresca a base di tamarindo, dolce e leggermente acidula."},
+    {name:"Carajillo", cat:"Bevanda", spice:0, stars:3, place:"Messico", emoji:"☕", desc:"Caffè espresso mixato con liquore (spesso Licor 43), servito come dopo cena."}
+  ];
+
+  /* ---------------- HELPERS ---------------- */
+  var DOW = ["Dom","Lun","Mar","Mer","Gio","Ven","Sab"];
+  var MON = ["Gen","Feb","Mar","Apr","Mag","Giu","Lug","Ago","Set","Ott","Nov","Dic"];
+  function fmt(d){ return DOW[d.getDay()]+" "+d.getDate()+" "+MON[d.getMonth()]; }
+  function sameDay(a,b){ return a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth() && a.getDate()===b.getDate(); }
+
+  function esc(s){
+    return String(s).replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  }
+  function mapBtn(query){
+    if(!query) return "";
+    return '<button class="mapbtn" data-mq="'+esc(query)+'" title="Apri in Google Maps" aria-label="Apri in Google Maps">📍</button>';
+  }
+  function starHtml(n){
+    var s = "";
+    for(var i=1;i<=5;i++){ s += '<span class="'+(i<=n?'on':'off')+'">★</span>'; }
+    return '<span class="stars" role="img" aria-label="Valutazione '+n+' su 5">'+s+'</span>';
+  }
+  function lodgingHtml(l){
+    var addr = l.address ? '<div class="lodging-line">📍 '+l.address+'</div>' : '';
+    return '<div class="lodging-card">'+
+      '<div class="lodging-name">🏨 '+l.name+'</div>'+
+      addr+
+      '<div class="lodging-line">📅 Check-in: <strong>'+l.checkin+'</strong></div>'+
+      '<div class="lodging-line">📅 Check-out: <strong>'+l.checkout+'</strong></div>'+
+      '<div class="place-row" style="justify-content:flex-end;margin-top:8px;">'+mapBtn(l.query)+'</div>'+
+    '</div>';
+  }
+  document.addEventListener("click", function(e){
+    var b = e.target.closest(".mapbtn");
+    if(!b) return;
+    var q = b.getAttribute("data-mq");
+    window.open("https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(q), "_blank");
+  });
+
+
+  function ls_get(key, fallback){
+    try{ var v = localStorage.getItem(key); return v===null? fallback : JSON.parse(v); }
+    catch(e){ return fallback; }
+  }
+  function ls_set(key, value){
+    try{ localStorage.setItem(key, JSON.stringify(value)); }catch(e){}
+  }
+
+  /* ---------------- RENDER: ROUTE MAP ---------------- */
+  function renderRouteMap(today, tripActive){
+    var wrap = document.getElementById("routeMap");
+    wrap.innerHTML = "";
+    routeStops.forEach(function(st, idx){
+      var isHere = tripActive && st.dates.some(function(d){ return sameDay(d, today); });
+      var row = document.createElement("div");
+      row.className = "routestep"+(st.flight?" flight":"")+(isHere?" here":"");
+      var connector = idx < routeStops.length-1 ? '<div class="connector"></div>' : '';
+      row.innerHTML =
+        '<div class="rail-col"><div class="dot"></div>'+connector+'</div>'+
+        '<div class="rbody">'+
+          '<strong>'+st.name+'</strong>'+
+          '<span class="rdate">'+st.sub+'</span>'+
+          (st.flight ? '<span class="flight-tag">✈️ Volo interno verso CDMX</span>' : '')+
+        '</div>';
+      wrap.appendChild(row);
+    });
+
+    var tl = document.createElement("div");
+    tl.className = "route-timeline";
+    routeStops.forEach(function(st){
+      var isHere = tripActive && st.dates.some(function(d){ return sameDay(d, today); });
+      var t = document.createElement("div");
+      t.className = "tstop"+(isHere?" here":"");
+      t.innerHTML = '<strong>'+st.name+'</strong>'+st.sub;
+      tl.appendChild(t);
+    });
+    wrap.appendChild(tl);
+  }
+
+  /* ---------------- RENDER: HOME ---------------- */
+  function renderHome(){
+    var today = new Date(); today.setHours(0,0,0,0);
+    var box = document.getElementById("homeStatus");
+    var html = "";
+    var tripActive = !(today < TRIP_START || today > TRIP_END);
+    if(today < TRIP_START){
+      var msDiff = TRIP_START - today;
+      var days = Math.ceil(msDiff / 86400000);
+      html += '<div class="day-pill">Si parte tra '+days+' giorn'+(days===1?'o':'i')+'</div>';
+      html += '<h2>Yucatán &amp; Città del Messico</h2><p class="muted">Dal 31/12/2026 all\'11/01/2027 — controlla la sezione "Prima di Partire" per non dimenticare nulla.</p>';
+    } else if(today > TRIP_END){
+      html += '<div class="day-pill">Viaggio concluso</div><h2>Bentornat* dal Messico!</h2><p class="muted">Le tue note e la checklist sono ancora salvate qui.</p>';
+    } else {
+      var current = itinerary[0];
+      for(var i=0;i<itinerary.length;i++){ if(sameDay(itinerary[i].date, today)) current = itinerary[i]; }
+      html += '<div class="day-pill">Oggi — '+fmt(today)+'</div>';
+      html += '<h2>'+current.city+'</h2><p>'+current.label+'</p><p class="muted">'+current.note+'</p>';
+    }
+    box.innerHTML = html;
+    renderRouteMap(today, tripActive);
+
+    var strip = document.getElementById("miniStrip");
+    strip.innerHTML = "";
+    var seen = {};
+    itinerary.forEach(function(it){
+      if(seen[it.city]) return; seen[it.city]=true;
+      var div = document.createElement("div");
+      div.className = "stop"+(!(today<TRIP_START||today>TRIP_END) && sameDay(it.date,today) ? " here":"");
+      div.textContent = it.city;
+      strip.appendChild(div);
+    });
+  }
+
+  /* ---------------- RENDER: ITINERARIO ---------------- */
+  /* ---------------- RENDER: ITINERARIO (per destinazione) ---------------- */
+  function renderItinerary(){
+    var wrap = document.getElementById("itineraryList");
+    wrap.innerHTML = "";
+    cities.forEach(function(c, idx){
+      var d = document.createElement("details");
+      d.className = "acc searchable";
+      d.id = "city-acc-"+c.key;
+      var fareTxt = c.fareByDay
+        ? c.fareByDay.map(function(day){
+            return day.date+" "+(day.label||"")+" "+day.blocks.map(function(b){
+              return b.time+" "+b.items.map(function(it){return it.t;}).join(" ");
+            }).join(" ");
+          }).join(" ")
+        : c.fare.map(function(x){return x.t+" "+x.d;}).join(" ");
+      var mangiareTxt = c.mangiare.map(function(x){return x.t+" "+x.d;}).join(" ");
+      var sapereTxt = c.sapere.join(" ");
+      d.setAttribute("data-search", (c.name+" "+c.overview+" "+c.lodging.name+" "+fareTxt+" "+mangiareTxt+" "+sapereTxt).toLowerCase());
+      var subId = "city-sub-"+idx;
+      var alloggioRow = lodgingHtml(c.lodging);
+      var fareList = c.fareByDay
+        ? c.fareByDay.map(function(day){
+            var header = '<div class="day-plan-header">📅 '+day.date+(day.label?' <span class="dp-sub">'+day.label+'</span>':'')+'</div>';
+            var blocks = day.blocks.map(function(b){
+              var items = '<ul>'+b.items.map(function(it){
+                return '<li><div class="place-row"><span class="place-text">'+it.t+'</span>'+mapBtn(it.q)+'</div></li>';
+              }).join("")+'</ul>';
+              return '<div class="block-label">'+b.time+'</div>'+items;
+            }).join("");
+            return '<div class="day-plan">'+header+blocks+'</div>';
+          }).join("")
+        : '<ul>'+c.fare.map(function(x){
+            return '<li><div class="place-row"><span class="place-text"><strong>'+x.t+'</strong> — '+x.d+'</span>'+mapBtn(x.q)+'</div></li>';
+          }).join("")+'</ul>';
+      var mangiareList = '<ul>'+c.mangiare.map(function(x){
+        return '<li><div class="place-row"><span class="place-text"><strong>'+x.t+'</strong> — '+x.d+'</span>'+mapBtn(x.q)+'</div></li>';
+      }).join("")+'</ul>';
+      var sapereList = '<ul>'+c.sapere.map(function(s){ return '<li>'+s+'</li>'; }).join("")+'</ul>';
+      var nextStopHtml = c.nextStop.final
+        ? '<div class="next-stop"><div class="ns-label">📍 Fine del viaggio</div><div class="ns-mode">'+c.nextStop.mode+'</div></div>'
+        : '<div class="next-stop"><div class="ns-label">📍 Prossima tappa</div><div class="ns-route">'+c.name+' → '+c.nextStop.to+'</div><div class="ns-mode">'+c.nextStop.mode+'</div></div>';
+      d.innerHTML =
+        '<summary><div class="acc-title"><strong>'+c.emoji+' '+c.name+'</strong><span>'+c.dateRange+' · '+c.nights+'</span></div>'+
+        '<svg class="chev" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></summary>'+
+        '<div class="acc-body">'+
+          '<p class="muted">'+c.overview+'</p>'+
+          '<div class="chiptabs" data-group="'+subId+'">'+
+            '<button data-target="'+subId+'-a" class="active">🏨 Alloggio</button>'+
+            '<button data-target="'+subId+'-f">🎯 Cosa fare</button>'+
+            '<button data-target="'+subId+'-m">🍽️ Dove mangiare</button>'+
+            '<button data-target="'+subId+'-t">🚕 Trasporti</button>'+
+            '<button data-target="'+subId+'-s">ℹ️ Da sapere</button>'+
+          '</div>'+
+          '<div class="citypane active" id="'+subId+'-a"><div class="field">'+alloggioRow+'</div></div>'+
+          '<div class="citypane" id="'+subId+'-f">'+fareList+'</div>'+
+          '<div class="citypane" id="'+subId+'-m">'+mangiareList+'</div>'+
+          '<div class="citypane" id="'+subId+'-t"><p>'+c.trasporti+'</p></div>'+
+          '<div class="citypane" id="'+subId+'-s">'+sapereList+'</div>'+
+          nextStopHtml+
+        '</div>';
+      wrap.appendChild(d);
+    });
+
+    wrap.addEventListener("click", function(e){
+      var btn = e.target.closest("button[data-target]");
+      if(!btn) return;
+      var group = btn.parentElement;
+      group.querySelectorAll("button").forEach(function(b){ b.classList.remove("active"); });
+      btn.classList.add("active");
+      var body = group.parentElement;
+      body.querySelectorAll(".citypane").forEach(function(p){ p.classList.remove("active"); });
+      document.getElementById(btn.getAttribute("data-target")).classList.add("active");
+    });
+  }
+
+  /* ---------------- RENDER: CENOTE ---------------- */
+  var cenotes = [
+    {name:"Oxman", place:"Hacienda Oxman, Valladolid", stars:5, q:"Cenote Oxman, Valladolid",
+      desc:"Cenote a cielo aperto dentro una hacienda, con altalena sospesa sull'acqua e area relax con ristorante."},
+    {name:"Suytun", place:"Vicino a Valladolid", stars:5, q:"Cenote Suytun, Valladolid",
+      desc:"Cenote semi-chiuso reso famoso da un raggio di luce centrale e una piattaforma per foto iconiche."},
+    {name:"Xkeken", place:"Dzitnup, vicino Valladolid", stars:4, q:"Cenote Xkeken, Dzitnup",
+      desc:"Cenote sotterraneo con stalattiti, illuminato da un piccolo foro nel soffitto che filtra la luce sull'acqua."},
+    {name:"Chukum", place:"Homún, Yucatán (circa 1h da Valladolid/Mérida)", stars:4, q:"Cenote Chukum, Homún",
+      desc:"Cenote semi-aperto, meno turistico degli altri, con acqua molto cristallina."},
+    {name:"Samulá", place:"Dzitnup, vicino Valladolid", stars:3, q:"Cenote Samulá, Dzitnup",
+      desc:"Cenote sotterraneo gemello di Xkeken, con lunghe radici di alberi che scendono fino alla superficie dell'acqua."}
+  ];
+  function renderCenotes(){
+    var wrap = document.getElementById("cenoteList");
+    wrap.innerHTML = "";
+    cenotes.forEach(function(c){
+      var card = document.createElement("div");
+      card.className = "cenote-card searchable";
+      card.setAttribute("data-search",(c.name+" "+c.place+" "+c.desc).toLowerCase());
+      card.innerHTML =
+        '<div class="cenote-head"><div class="name-row"><h3>'+c.name+'</h3>'+starHtml(c.stars)+'</div></div>'+
+        '<p class="muted" style="margin:2px 0 6px;">'+c.place+'</p>'+
+        '<p>'+c.desc+'</p>'+
+        '<div class="place-row" style="justify-content:flex-end;margin-top:8px;">'+mapBtn(c.q)+'</div>';
+      wrap.appendChild(card);
+    });
+  }
+
+  /* ---------------- RENDER: PRENOTAZIONI ALLOGGI (riepilogo) ---------------- */
+  function renderLodging(){
+    var box = document.getElementById("lodgingBody");
+    box.innerHTML = cities.map(function(c){
+      return '<div class="field"><label>'+c.name+' — '+c.dateRange+' ('+c.nights+')</label>'+lodgingHtml(c.lodging)+'</div>';
+    }).join("");
+  }
+
+  /* ---------------- CHECKLIST VALIGIA ---------------- */
+  function slug(s){
+    return s.toLowerCase().replace(/[^a-z0-9]+/g,"_").replace(/^_+|_+$/g,"");
+  }
+  function renderPacking(){
+    var box = document.getElementById("checklistPacking");
+    var state = ls_get("packing_state", {});
+    box.innerHTML = "";
+    packingChecklist.forEach(function(item){
+      var id = "pack_"+slug(item);
+      var label = document.createElement("label");
+      label.innerHTML = '<input type="checkbox" data-id="'+id+'" '+(state[id]?"checked":"")+'><span>'+item+'</span>';
+      box.appendChild(label);
+    });
+    box.addEventListener("change", function(e){
+      if(e.target.type !== "checkbox") return;
+      var st = ls_get("packing_state", {});
+      st[e.target.getAttribute("data-id")] = e.target.checked;
+      ls_set("packing_state", st);
+    });
+  }
+
+  /* ---------------- FOOD ---------------- */
+  var foodFilterState = "Tutti";
+  var foodStarFilterState = "Tutti";
+  function renderFoodFilters(){
+    var cats = ["Tutti","Piatto","Dolce","Bevanda"];
+    var bar = document.getElementById("foodFilter");
+    bar.innerHTML = "";
+    cats.forEach(function(cat){
+      var b = document.createElement("button");
+      b.textContent = cat;
+      if(cat===foodFilterState) b.classList.add("active");
+      b.addEventListener("click", function(){
+        foodFilterState = cat;
+        bar.querySelectorAll("button").forEach(function(x){x.classList.remove("active");});
+        b.classList.add("active");
+        renderFoodGrid();
+      });
+      bar.appendChild(b);
+    });
+
+    var starOptions = [
+      {label:"Tutti", val:"Tutti"},
+      {label:"★★★★★", val:5},
+      {label:"★★★★", val:4},
+      {label:"★★★", val:3}
+    ];
+    var starBar = document.getElementById("foodStarFilter");
+    starBar.innerHTML = "";
+    starOptions.forEach(function(opt){
+      var b = document.createElement("button");
+      b.textContent = opt.label;
+      if(opt.val===foodStarFilterState) b.classList.add("active");
+      b.addEventListener("click", function(){
+        foodStarFilterState = opt.val;
+        starBar.querySelectorAll("button").forEach(function(x){x.classList.remove("active");});
+        b.classList.add("active");
+        renderFoodGrid();
+      });
+      starBar.appendChild(b);
+    });
+  }
+  function renderFoodGrid(){
+    var grid = document.getElementById("foodGrid");
+    var tried = ls_get("food_tried", {});
+    grid.innerHTML = "";
+    var list = foods.filter(function(f){
+      var catOk = foodFilterState==="Tutti" || f.cat===foodFilterState;
+      var starOk = foodStarFilterState==="Tutti" || f.stars===foodStarFilterState;
+      return catOk && starOk;
+    });
+    if(list.length===0){ grid.innerHTML = '<p class="empty-msg">Nessun risultato.</p>'; return; }
+    list.forEach(function(f,i){
+      var key = "food_"+f.name;
+      var isTried = !!tried[key];
+      var card = document.createElement("div");
+      card.className = "foodcard searchable"+(isTried?" tried":"");
+      card.setAttribute("data-search",(f.name+" "+f.cat+" "+f.place+" "+f.desc).toLowerCase());
+      var spice = "🌶️".repeat(f.spice) || "—";
+      card.innerHTML =
+        '<div class="foodphoto">'+f.emoji+'</div>'+
+        '<div class="foodbody">'+
+          '<strong>'+f.name+'</strong>'+
+          starHtml(f.stars)+
+          '<p>'+f.desc+'</p>'+
+          '<div class="foodmeta"><span class="tag">'+f.place+'</span><span>'+spice+'</span></div>'+
+          '<label style="margin-top:8px;"><input type="checkbox" data-key="'+key+'" '+(isTried?"checked":"")+'> Provato</label>'+
+        '</div>';
+      grid.appendChild(card);
+    });
+  }
+
+  document.addEventListener("change", function(e){
+    if(e.target.matches('#foodGrid input[type=checkbox]')){
+      var st = ls_get("food_tried", {});
+      st[e.target.getAttribute("data-key")] = e.target.checked;
+      ls_set("food_tried", st);
+      var card = e.target.closest(".foodcard");
+      if(card) card.classList.toggle("tried", e.target.checked);
+    }
+  });
+
+  /* ---------------- BAGAGLI ---------------- */
+  function initBaggage(){
+    var cb = document.getElementById("baggageChecked");
+    cb.checked = ls_get("baggage_checked", false);
+    cb.addEventListener("change", function(){ ls_set("baggage_checked", cb.checked); });
+  }
+
+  /* ---------------- SOLDI E PAGAMENTI ---------------- */
+  function initMoney(){
+    var cashInput = document.getElementById("moneyCash");
+    var prepaidInput = document.getElementById("moneyPrepaid");
+    var totalBox = document.getElementById("moneyTotal");
+    cashInput.value = ls_get("money_cash", "");
+    prepaidInput.value = ls_get("money_prepaid", "");
+    function updateTotal(){
+      var cash = parseFloat(cashInput.value) || 0;
+      var prepaid = parseFloat(prepaidInput.value) || 0;
+      totalBox.textContent = "€ " + (cash + prepaid).toLocaleString("it-IT");
+    }
+    cashInput.addEventListener("input", function(){ ls_set("money_cash", cashInput.value); updateTotal(); });
+    prepaidInput.addEventListener("input", function(){ ls_set("money_prepaid", prepaidInput.value); updateTotal(); });
+    updateTotal();
+
+    var bankCb = document.getElementById("bankNotice");
+    bankCb.checked = ls_get("money_bank_notice", false);
+    bankCb.addEventListener("change", function(){ ls_set("money_bank_notice", bankCb.checked); });
+  }
+
+  /* ---------------- NAVIGATION ---------------- */
+  var pages = ["home","itinerario","cenote","partire","altro"];
+  function goTo(page){
+    var target = page === "food" ? "altro" : page;
+    pages.forEach(function(p){
+      document.getElementById("page-"+p).classList.toggle("active", p===target);
+    });
+    document.querySelectorAll("nav.rail button").forEach(function(b){
+      b.classList.toggle("active", b.getAttribute("data-page")===target);
+    });
+    if(page === "food"){
+      altroTabs.querySelectorAll("button").forEach(function(b){ b.classList.toggle("active", b.getAttribute("data-sub")==="food"); });
+      document.querySelectorAll(".subpage").forEach(function(p){ p.classList.toggle("active", p.id==="sub-food"); });
+    }
+    document.getElementById("scrollArea").scrollIntoView({behavior:"instant",block:"start"});
+    window.scrollTo(0,0);
+    clearSearch();
+  }
+  document.querySelectorAll("nav.rail button").forEach(function(b){
+    b.addEventListener("click", function(){ goTo(b.getAttribute("data-page")); });
+  });
+  document.querySelectorAll("[data-goto]").forEach(function(b){
+    b.addEventListener("click", function(){ goTo(b.getAttribute("data-goto")); });
+  });
+
+  var altroTabs = document.getElementById("altroTabs");
+  altroTabs.addEventListener("click", function(e){
+    var btn = e.target.closest("button[data-sub]");
+    if(!btn) return;
+    altroTabs.querySelectorAll("button").forEach(function(b){ b.classList.remove("active"); });
+    btn.classList.add("active");
+    document.querySelectorAll(".subpage").forEach(function(p){ p.classList.remove("active"); });
+    document.getElementById("sub-"+btn.getAttribute("data-sub")).classList.add("active");
+  });
+
+  /* ---------------- SEARCH ---------------- */
+  var searchToggle = document.getElementById("searchToggle");
+  var searchWrap = document.getElementById("searchWrap");
+  var searchInput = document.getElementById("searchInput");
+  searchToggle.addEventListener("click", function(){
+    searchWrap.classList.toggle("open");
+    if(searchWrap.classList.contains("open")) searchInput.focus();
+    else clearSearch();
+  });
+  function clearSearch(){
+    searchInput.value = "";
+    filterSearch("");
+  }
+  function filterSearch(q){
+    q = q.trim().toLowerCase();
+    var activePage = document.querySelector(".page.active");
+    if(!activePage) return;
+    var items = activePage.querySelectorAll(".searchable");
+    var anyVisible = false;
+    items.forEach(function(el){
+      var match = q==="" || (el.getAttribute("data-search")||"").indexOf(q) !== -1;
+      el.style.display = match ? "" : "none";
+      if(match) anyVisible = true;
+      if(match && q!=="" && el.tagName === "DETAILS") el.open = true;
+    });
+    var existingMsg = activePage.querySelector(".empty-msg[data-auto]");
+    if(existingMsg) existingMsg.remove();
+    if(q!=="" && !anyVisible && items.length){
+      var msg = document.createElement("p");
+      msg.className = "empty-msg"; msg.setAttribute("data-auto","1");
+      msg.textContent = "Nessun risultato per \""+q+"\".";
+      activePage.appendChild(msg);
+    }
+  }
+  searchInput.addEventListener("input", function(){ filterSearch(searchInput.value); });
+
+  /* ---------------- BACK TO TOP ---------------- */
+  var backtop = document.getElementById("backtop");
+  window.addEventListener("scroll", function(){
+    backtop.classList.toggle("show", window.scrollY > 280);
+  });
+  backtop.addEventListener("click", function(){ window.scrollTo({top:0, behavior:"smooth"}); });
+
+  /* ---------------- RESET ---------------- */
+  document.getElementById("resetData").addEventListener("click", function(){
+    if(confirm("Cancellare checklist e food provati salvati su questo dispositivo?")){
+      ["packing_state","food_tried"].forEach(function(k){ localStorage.removeItem(k); });
+      renderPacking(); renderFoodGrid();
+    }
+  });
+
+  /* ---------------- INIT ---------------- */
+  renderHome();
+  renderItinerary();
+  renderCenotes();
+  renderLodging();
+  renderPacking();
+  renderFoodFilters();
+  renderFoodGrid();
+  initMoney();
+  initBaggage();
+
+})();
+</script>
+</body>
+</html>
